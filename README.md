@@ -120,9 +120,9 @@ curl http://localhost:5050/api/health
 
 | 界面 | 地址 |
 |---|---|
-| 系统首页 | http://localhost:5050/ |
-| 桌面工作台 | http://localhost:5050/desktop/ |
-| 移动端（建议 F12 手机模拟） | http://localhost:5050/mobile/ |
+| 系统首页 | 
+| 桌面工作台 |
+| 移动端（建议 F12 手机模拟） 
 
 ### 3. 安装 QGIS 插件
 
