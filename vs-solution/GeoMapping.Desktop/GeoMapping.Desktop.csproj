@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>GeoMapping.Desktop</AssemblyName>
+    <RootNamespace>GeoMapping.Desktop</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject>GeoMapping.Desktop.Program</StartupObject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);MSB3277;MSB3247</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,834 @@
+/* ═══════════════════════════════════════════════════════════════
+   地质填图系统 · 移动端
+   Apple HIG · Warm Cream · Clean · Fluid
+
+   设计令牌对齐桌面端 style.css
+   Android WebView 兼容：backdrop-filter → fallback rgba
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+    /* === 背景色系（肉白暖调） === */
+    --bg-primary: #faf7f2;
+    --bg-secondary: #f3efe9;
+    --bg-tertiary: #ebe6de;
+    --bg-quaternary: #e0dbd3;
+
+    /* === 玻璃态 === */
+    --glass-bg: rgba(250, 247, 242, 0.82);
+    --glass-bg-fallback: rgba(250, 247, 242, 0.97); /* Android 无 backdrop-filter 降级 */
+    --glass-border: rgba(0, 0, 0, 0.06);
+
+    /* === 文字色阶 === */
+    --fill-primary: rgba(0, 0, 0, 0.88);
+    --fill-secondary: rgba(0, 0, 0, 0.56);
+    --fill-tertiary: rgba(0, 0, 0, 0.32);
+    --fill-quaternary: rgba(0, 0, 0, 0.12);
+    --fill-quinary: rgba(0, 0, 0, 0.06);
+
+    /* === 语义色 === */
+    --accent: #007aff;
+    --accent-dim: rgba(0, 122, 255, 0.12);
+    --success: #34c759;
+    --warning: #ff9500;
+    --danger: #ff3b30;
+
+    /* === 分隔线 === */
+    --separator: rgba(0, 0, 0, 0.08);
+    --separator-opaque: #ddd8d0;
+
+    /* === 间距系统 (4px 基准) === */
+    --s-4: 4px;
+    --s-8: 8px;
+    --s-12: 12px;
+    --s-16: 16px;
+    --s-20: 20px;
+    --s-24: 24px;
+    --s-32: 32px;
+
+    /* === 圆角 === */
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+    --r-xl: 20px;
+
+    /* === 阴影 === */
+    --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+    --shadow-lg: 0 16px 48px rgba(0,0,0,0.10);
+
+    /* === 字体栈 === */
+    --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+                   'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+    --font-mono: 'SF Mono', 'JetBrains Mono', 'Menlo', 'Consolas', monospace;
+
+    /* === 动画曲线 === */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --spring: cubic-bezier(0.22, 0.99, 0.54, 1.01);
+    --duration-fast: 0.12s;
+    --duration-normal: 0.28s;
+    --duration-slow: 0.35s;
+
+    /* === 布局 === */
+    --header-h: 48px;
+    --footer-h: 64px;
+    --gps-bar-h: 28px;
+    --panel-width: 85%;
+    --panel-max-width: 380px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Reset & Base
+   ═══════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--fill-quaternary); border-radius: 100px; }
+
+body {
+    font-family: var(--font-system);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.47059;
+    letter-spacing: -0.01em;
+    background: var(--bg-primary);
+    color: var(--fill-primary);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Header — 玻璃态
+   ═══════════════════════════════════════════════════════════════ */
+
+#mobileHeader {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--header-h);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 var(--s-12);
+    z-index: 2000;
+    /* 玻璃态 */
+    background: var(--glass-bg-fallback);
+    border-bottom: 0.5px solid var(--separator);
+}
+/* 支持 backdrop-filter 的设备使用真·玻璃态 */
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+    #mobileHeader {
+        background: var(--glass-bg);
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+    }
+}
+
+.header-title {
+    display: flex; align-items: center; gap: var(--s-8);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fill-primary);
+}
+.header-actions {
+    display: flex; align-items: center; gap: var(--s-4);
+}
+
+.icon-btn {
+    background: none; border: none;
+    color: var(--fill-secondary);
+    font-size: 18px;
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.icon-btn:active {
+    background: var(--fill-quinary);
+    color: var(--fill-primary);
+    transform: scale(0.94);
+}
+
+/* GPS / Record 状态指示 */
+.gps-indicator {
+    font-size: 12px; font-weight: 500;
+    color: var(--fill-secondary);
+}
+.gps-indicator.active { color: var(--success); }
+
+.record-indicator {
+    font-size: 11px; font-weight: 700;
+    color: var(--danger);
+    animation: blink 1s infinite;
+}
+@keyframes blink { 50% { opacity: 0.25; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   Map
+   ═══════════════════════════════════════════════════════════════ */
+
+#mobileMap {
+    position: fixed;
+    top: var(--header-h);
+    bottom: var(--footer-h);
+    left: 0; right: 0;
+    background: #e8e4dc;
+    z-index: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GPS Info Bar
+   ═══════════════════════════════════════════════════════════════ */
+
+#gpsInfoBar {
+    position: fixed;
+    top: var(--header-h); left: 0; right: 0;
+    height: var(--gps-bar-h);
+    background: var(--glass-bg-fallback);
+    z-index: 1500;
+    display: flex; justify-content: space-around; align-items: center;
+    font-size: 10px; font-weight: 500;
+    color: var(--fill-tertiary);
+    padding: 0 var(--s-12);
+    border-bottom: 0.5px solid var(--separator);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Footer — 玻璃态标签栏
+   ═══════════════════════════════════════════════════════════════ */
+
+#mobileFooter {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: var(--footer-h);
+    display: flex; align-items: center;
+    z-index: 2000;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    /* 玻璃态 */
+    background: var(--glass-bg-fallback);
+    border-top: 0.5px solid var(--separator);
+}
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+    #mobileFooter {
+        background: var(--glass-bg);
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+    }
+}
+
+.footer-btn {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2px;
+    background: none; border: none;
+    color: var(--fill-tertiary);
+    cursor: pointer;
+    padding: var(--s-8) 0;
+    font-size: 10px; font-weight: 500;
+    font-family: var(--font-system);
+    letter-spacing: 0.01em;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.footer-btn .btn-icon { font-size: 22px; line-height: 1; }
+.footer-btn .btn-label { margin-top: 1px; }
+
+.footer-btn:active {
+    transform: scale(0.92);
+}
+.footer-btn.active {
+    color: var(--accent);
+}
+
+/* Record button */
+.record-btn.recording { color: var(--danger); }
+.record-btn.recording .record-icon {
+    animation: recordPulse 1.5s ease-in-out infinite;
+}
+@keyframes recordPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.25); opacity: 0.6; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Side Panels — 侧滑抽屉
+   ═══════════════════════════════════════════════════════════════ */
+
+.side-panel {
+    position: fixed;
+    top: 0; bottom: 0; left: 0;
+    width: var(--panel-width);
+    max-width: var(--panel-max-width);
+    background: var(--bg-primary);
+    z-index: 3000;
+    transform: translateX(-100%);
+    transition: transform var(--duration-slow) var(--spring);
+    display: flex; flex-direction: column;
+    box-shadow: var(--shadow-lg);
+    will-change: transform;
+}
+.side-panel.open {
+    transform: translateX(0);
+}
+
+/* 右侧面板 */
+.right-panel {
+    left: auto; right: 0;
+    transform: translateX(100%);
+}
+.right-panel.open {
+    transform: translateX(0);
+}
+
+.panel-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: var(--s-16);
+    border-bottom: 0.5px solid var(--separator);
+    flex-shrink: 0;
+}
+.panel-head h3 {
+    font-size: 16px; font-weight: 700;
+    color: var(--fill-primary);
+    letter-spacing: -0.01em;
+}
+.close-btn {
+    background: none; border: none;
+    color: var(--fill-tertiary);
+    font-size: 16px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.close-btn:active {
+    background: var(--fill-quinary);
+    color: var(--fill-primary);
+}
+
+.panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--s-16);
+    -webkit-overflow-scrolling: touch;
+}
+
+.panel-divider {
+    height: 0.5px;
+    background: var(--separator);
+    margin: var(--s-16) 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Overlay
+   ═══════════════════════════════════════════════════════════════ */
+
+.overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.24);
+    z-index: 2500;
+    display: none;
+    animation: overlayFadeIn var(--duration-normal) var(--ease-out);
+}
+.overlay.active { display: block; }
+@keyframes overlayFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   Menu
+   ═══════════════════════════════════════════════════════════════ */
+
+.menu-section { margin-bottom: var(--s-20); }
+.menu-label {
+    font-size: 11px; font-weight: 600;
+    color: var(--fill-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: var(--s-8);
+}
+
+.menu-btn {
+    width: 100%;
+    padding: var(--s-12);
+    margin: 2px 0;
+    border-radius: var(--r-md);
+    border: 0.5px solid var(--separator);
+    background: var(--bg-secondary);
+    color: var(--fill-primary);
+    font-size: 14px; font-weight: 500;
+    font-family: var(--font-system);
+    cursor: pointer;
+    text-align: left;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.menu-btn:active {
+    background: var(--bg-tertiary);
+    transform: scale(0.985);
+}
+
+.menu-section select {
+    width: 100%;
+    padding: var(--s-12);
+    border-radius: var(--r-md);
+    background: var(--bg-secondary);
+    color: var(--fill-primary);
+    border: 0.5px solid var(--separator);
+    font-size: 14px; font-weight: 500;
+    font-family: var(--font-system);
+    margin-bottom: var(--s-8);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300000050' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Layer Items — 自定义 Checkbox
+   ═══════════════════════════════════════════════════════════════ */
+
+.layer-item {
+    display: flex; align-items: center; gap: var(--s-10);
+    padding: var(--s-10) 0;
+    border-bottom: 0.5px solid var(--fill-quinary);
+    cursor: pointer;
+}
+.layer-item:last-child { border-bottom: none; }
+
+/* Custom checkbox — Apple style */
+.layer-item input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border: 1.5px solid var(--fill-quaternary);
+    border-radius: 5px;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--duration-fast) var(--ease-out);
+    position: relative;
+}
+.layer-item input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+.layer-item input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 6px; top: 2px;
+    width: 5px; height: 10px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+.layer-item label {
+    font-size: 14px; font-weight: 500;
+    color: var(--fill-secondary);
+    flex: 1; cursor: pointer;
+}
+.layer-item:has(input:checked) label {
+    color: var(--fill-primary);
+}
+
+/* Layer panel select */
+#layerPanel select {
+    width: 100%;
+    padding: var(--s-10) var(--s-12);
+    border-radius: var(--r-md);
+    background: var(--bg-secondary);
+    color: var(--fill-primary);
+    border: 0.5px solid var(--separator);
+    font-size: 13px; font-weight: 500;
+    font-family: var(--font-system);
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300000050' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Collect Form
+   ═══════════════════════════════════════════════════════════════ */
+
+.collect-form {
+    display: flex; flex-direction: column; gap: var(--s-12);
+}
+
+.form-row {
+    display: flex; flex-direction: column; gap: var(--s-4);
+}
+.form-row label {
+    font-size: 11px; font-weight: 600;
+    color: var(--fill-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.form-row input,
+.form-row select,
+.form-row textarea {
+    padding: var(--s-10) var(--s-12);
+    border-radius: var(--r-md);
+    background: var(--bg-secondary);
+    color: var(--fill-primary);
+    border: 0.5px solid var(--separator);
+    font-size: 14px;
+    font-family: var(--font-system);
+    transition: border-color var(--duration-fast) var(--ease-out);
+    outline: none;
+}
+.form-row input:focus,
+.form-row select:focus,
+.form-row textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.form-row input[readonly] {
+    color: var(--accent);
+    font-weight: 500;
+    background: var(--bg-primary);
+}
+.form-row textarea {
+    resize: vertical;
+    min-height: 60px;
+    line-height: 1.5;
+}
+.form-row select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300000050' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: var(--s-14);
+    border-radius: var(--r-lg);
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    font-size: 15px; font-weight: 600;
+    font-family: var(--font-system);
+    cursor: pointer;
+    margin-top: var(--s-8);
+    letter-spacing: -0.01em;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.submit-btn:active {
+    transform: scale(0.975);
+    opacity: 0.85;
+}
+
+/* Photo preview */
+.photo-preview {
+    display: flex; flex-wrap: wrap; gap: var(--s-8);
+}
+.photo-preview img {
+    width: 60px; height: 60px;
+    object-fit: cover;
+    border-radius: var(--r-sm);
+    border: 2px solid var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Data List
+   ═══════════════════════════════════════════════════════════════ */
+
+.filter-bar { margin-bottom: var(--s-12); }
+.filter-bar select {
+    width: 100%;
+    padding: var(--s-10) var(--s-12);
+    border-radius: var(--r-md);
+    background: var(--bg-secondary);
+    color: var(--fill-primary);
+    border: 0.5px solid var(--separator);
+    font-size: 13px; font-weight: 500;
+    font-family: var(--font-system);
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2300000050' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+.data-list { display: flex; flex-direction: column; gap: var(--s-8); }
+
+.data-item {
+    background: var(--bg-secondary);
+    border-radius: var(--r-md);
+    padding: var(--s-12);
+    border: 0.5px solid var(--separator);
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.data-item:active {
+    background: var(--bg-tertiary);
+    transform: scale(0.985);
+}
+
+.data-item .di-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: var(--s-6);
+}
+.data-item .di-number {
+    font-weight: 700; font-size: 14px;
+    color: var(--accent);
+}
+.data-item .di-type {
+    font-size: 11px; font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+.data-item .di-details {
+    font-size: 12px; color: var(--fill-tertiary);
+    display: flex; flex-wrap: wrap; gap: var(--s-8);
+    line-height: 1.4;
+}
+.data-item .di-actions {
+    display: flex; gap: var(--s-8); margin-top: var(--s-8);
+}
+.data-item .di-actions button {
+    flex: 1; padding: var(--s-6) var(--s-8);
+    border-radius: var(--r-sm);
+    border: 0.5px solid var(--separator);
+    background: var(--bg-primary);
+    color: var(--fill-secondary);
+    font-size: 12px; font-weight: 500;
+    font-family: var(--font-system);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.data-item .di-actions button:active {
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+.placeholder {
+    text-align: center;
+    color: var(--fill-tertiary);
+    font-size: 13px;
+    padding: var(--s-32) 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Settings
+   ═══════════════════════════════════════════════════════════════ */
+
+.version-label {
+    font-size: 11px; font-weight: 500;
+    color: var(--fill-tertiary);
+    padding: var(--s-8) var(--s-12);
+    background: var(--fill-quinary);
+    border-radius: 100px;
+    display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Toast
+   ═══════════════════════════════════════════════════════════════ */
+
+.toast {
+    position: fixed;
+    bottom: calc(var(--footer-h) + var(--s-16));
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--fill-primary);
+    color: #fff;
+    padding: var(--s-10) var(--s-20);
+    border-radius: 100px;
+    font-size: 13px; font-weight: 500;
+    font-family: var(--font-system);
+    letter-spacing: -0.01em;
+    z-index: 5000;
+    opacity: 0;
+    transition: all var(--duration-normal) var(--spring);
+    pointer-events: none;
+    white-space: nowrap;
+    max-width: 90vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Map Locate Button — 浮动定位按钮
+   ═══════════════════════════════════════════════════════════════ */
+
+.map-locate-btn {
+    position: fixed;
+    bottom: calc(var(--footer-h) + var(--s-20));
+    right: var(--s-12);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    border: 0.5px solid var(--separator);
+    box-shadow: var(--shadow-md);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 1000;
+    transition: all var(--duration-fast) var(--ease-out);
+}
+.map-locate-btn:active {
+    transform: scale(0.92);
+    background: var(--bg-tertiary);
+}
+.map-locate-btn .locate-icon {
+    font-size: 22px;
+    color: var(--accent);
+    line-height: 1;
+    transition: transform var(--duration-normal) var(--spring);
+}
+.map-locate-btn.locating .locate-icon {
+    animation: locateSpin 0.6s ease-in-out;
+}
+@keyframes locateSpin {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.15); }
+    100% { transform: rotate(360deg) scale(1); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Location Info Card — Apple 风格经纬度卡片
+   ═══════════════════════════════════════════════════════════════ */
+
+.location-card {
+    position: fixed;
+    top: calc(var(--header-h) + var(--gps-bar-h) + var(--s-8));
+    left: 50%;
+    transform: translateX(-50%) translateY(-120%);
+    z-index: 1200;
+    background: var(--glass-bg-fallback);
+    border: 0.5px solid var(--separator);
+    border-radius: var(--r-lg);
+    padding: var(--s-8) var(--s-16);
+    display: flex; align-items: center; gap: 0;
+    box-shadow: var(--shadow-md);
+    transition: transform var(--duration-slow) var(--spring),
+                opacity var(--duration-slow) var(--ease-out);
+    opacity: 0;
+    white-space: nowrap;
+    pointer-events: none;
+}
+@supports (backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px)) {
+    .location-card {
+        background: var(--glass-bg);
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+    }
+}
+.location-card.visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.loc-card-row {
+    display: flex; flex-direction: column; align-items: center;
+    padding: var(--s-4) var(--s-10);
+    gap: 1px;
+}
+.loc-card-label {
+    font-size: 9px; font-weight: 600;
+    color: var(--fill-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.loc-card-value {
+    font-size: 13px; font-weight: 700;
+    color: var(--fill-primary);
+    font-family: var(--font-mono);
+    letter-spacing: -0.02em;
+}
+.loc-card-divider {
+    width: 0.5px; height: 28px;
+    background: var(--separator);
+    flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GPS 定位标记脉冲动画
+   ═══════════════════════════════════════════════════════════════ */
+
+.current-location-marker {
+    background: transparent !important;
+    border: none !important;
+}
+.pulse-circle {
+    width: 16px; height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 0 10px var(--accent);
+    animation: pulse-ring 2s ease-out infinite;
+}
+@keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0.5); }
+    70%  { box-shadow: 0 0 0 14px rgba(0, 122, 255, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(0, 122, 255, 0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Mock GPS Bar
+   ═══════════════════════════════════════════════════════════════ */
+
+#mockGpsBar {
+    position: fixed;
+    top: var(--header-h);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    background: var(--bg-secondary);
+    border: 0.5px solid var(--accent);
+    border-radius: var(--r-md);
+    padding: var(--s-6) var(--s-10);
+    display: flex; align-items: center; gap: var(--s-6);
+    box-shadow: var(--shadow-md);
+}
+#mockGpsBar .mock-label {
+    font-size: 11px; font-weight: 500;
+    color: var(--fill-secondary);
+    white-space: nowrap;
+}
+#mockGpsBar input {
+    width: 70px; padding: var(--s-4) var(--s-6);
+    border-radius: var(--r-sm);
+    border: 0.5px solid var(--separator);
+    background: var(--bg-primary);
+    color: var(--fill-primary);
+    font-size: 11px; font-family: var(--font-system);
+}
+#mockGpsBar button {
+    padding: var(--s-4) var(--s-10);
+    border-radius: var(--r-sm);
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 11px; font-weight: 600;
+    font-family: var(--font-system);
+    cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Leaflet 移动端优化
+   ═══════════════════════════════════════════════════════════════ */
+
+.leaflet-control-zoom { display: none; }
+.leaflet-control-attribution { font-size: 8px !important; opacity: 0.5; }
+
+/* ═══════════════════════════════════════════════════════════════
+   Responsive — 平板横屏
+   ═══════════════════════════════════════════════════════════════ */
+
+@media (min-width: 768px) and (orientation: landscape) {
+    .side-panel { width: 45%; max-width: 420px; }
+}

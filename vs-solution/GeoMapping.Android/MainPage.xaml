@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="GeoMapping.Android.MainPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#0f172a">
+
+    <Grid RowDefinitions="Auto,*" Padding="0">
+
+        <!-- ════════════════════════════════════════
+             顶部状态栏 — 现代简约设计
+             ════════════════════════════════════════ -->
+        <Border Grid.Row="0"
+                BackgroundColor="#1e293b"
+                Stroke="Transparent"
+                Padding="16,14"
+                StrokeShape="RoundRectangle 0">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+                <!-- 状态指示点 — 使用动画效果 -->
+                <Border Grid.Column="0"
+                        x:Name="StatusDotBorder"
+                        BackgroundColor="#f59e0b30"
+                        Stroke="Transparent"
+                        StrokeShape="RoundRectangle 12"
+                        HeightRequest="24"
+                        WidthRequest="24"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        Margin="0,0,12,0">
+                    <Label x:Name="StatusDot"
+                           Text="●"
+                           TextColor="#f59e0b"
+                           FontSize="10"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <!-- 状态指示器文字 -->
+                <Label Grid.Column="1"
+                       x:Name="StatusIndicator"
+                       Text="连接中"
+                       TextColor="#f59e0b"
+                       FontSize="13"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center"
+                       Margin="0,0,14,0" />
+
+                <!-- 状态描述 — 更宽松的字间距 -->
+                <Label Grid.Column="2"
+                       x:Name="StatusText"
+                       Text="正在连接后端服务…"
+                       TextColor="#64748b"
+                       FontSize="13"
+                       VerticalOptions="Center"
+                       LineBreakMode="TailTruncation" />
+
+                <!-- 刷新按钮 — 圆形悬浮效果 -->
+                <Border Grid.Column="3"
+                        Stroke="Transparent"
+                        StrokeShape="RoundRectangle 20"
+                        BackgroundColor="#334155"
+                        HeightRequest="36"
+                        WidthRequest="36"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center">
+                    <Button x:Name="BtnRefresh"
+                            Text="⟳"
+                            BackgroundColor="Transparent"
+                            TextColor="#38bdf8"
+                            FontSize="16"
+                            Padding="0"
+                            HeightRequest="36"
+                            WidthRequest="36"
+                            CornerRadius="18"
+                            Clicked="OnRefreshClicked" />
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ════════════════════════════════════════
+             主体内容区
+             ════════════════════════════════════════ -->
+        <Grid Grid.Row="1">
+
+            <!-- WebView — 白色背景避免黑屏 -->
+            <WebView x:Name="GeoWebView"
+                     HorizontalOptions="Fill"
+                     VerticalOptions="Fill"
+                     Navigated="OnWebViewNavigated"
+                     Navigating="OnWebViewNavigating"
+                     BackgroundColor="White" />
+
+            <!-- ════════════════════════════════════════
+                 加载中遮罩 — 大气留白设计
+                 ════════════════════════════════════════ -->
+            <Grid x:Name="LoadingOverlay"
+                  BackgroundColor="#0f172a"
+                  IsVisible="True"
+                  Opacity="1">
+
+                <VerticalStackLayout VerticalOptions="Center"
+                                     HorizontalOptions="Center"
+                                     Spacing="28"
+                                     Padding="48">
+
+                    <!-- 品牌区域 — 大间距 -->
+                    <VerticalStackLayout Spacing="16" HorizontalOptions="Center">
+                        <!-- 加载动画容器 -->
+                        <Grid HeightRequest="72" WidthRequest="72" HorizontalOptions="Center">
+                            <!-- 外圈 -->
+                            <Border Stroke="#38bdf830"
+                                    StrokeThickness="3"
+                                    StrokeShape="RoundRectangle 36"
+                                    HeightRequest="72"
+                                    WidthRequest="72"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center" />
+                            <!-- 活动指示器 -->
+                            <ActivityIndicator IsRunning="True"
+                                               Color="#38bdf8"
+                                               WidthRequest="36"
+                                               HeightRequest="36"
+                                               HorizontalOptions="Center"
+                                               VerticalOptions="Center" />
+                        </Grid>
+
+                        <!-- 应用名称 -->
+                        <Label Text="地质填图"
+                               TextColor="#f8fafc"
+                               FontSize="26"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               CharacterSpacing="2" />
+                    </VerticalStackLayout>
+
+                    <!-- 分隔线 -->
+                    <BoxView HeightRequest="1"
+                             BackgroundColor="#334155"
+                             WidthRequest="120"
+                             HorizontalOptions="Center" />
+
+                    <!-- 加载信息区 — 更大间距 -->
+                    <VerticalStackLayout Spacing="12" HorizontalOptions="Center">
+                        <Label Text="正在加载移动填图页面…"
+                               TextColor="#94a3b8"
+                               FontSize="15"
+                               HorizontalOptions="Center" />
+
+                        <Label x:Name="LoadingHint"
+                               Text="请确保后端 python app.py 已启动在端口 5050"
+                               TextColor="#64748b"
+                               FontSize="12"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center" />
+                    </VerticalStackLayout>
+
+                    <!-- 进度条 — 更宽更精致 -->
+                    <Grid WidthRequest="260" HeightRequest="6" HorizontalOptions="Center">
+                        <!-- 背景轨道 -->
+                        <BoxView BackgroundColor="#1e293b"
+                                 CornerRadius="3"
+                                 HeightRequest="6" />
+                        <!-- 进度填充 -->
+                        <ProgressBar x:Name="LoadingProgress"
+                                     Progress="0"
+                                     ProgressColor="#38bdf8"
+                                     HeightRequest="6"
+                                     HorizontalOptions="Fill" />
+                    </Grid>
+
+                    <!-- 超时提示 — 初始隐藏 -->
+                    <Label x:Name="TimeoutHint"
+                           Text=""
+                           TextColor="#f59e0b"
+                           FontSize="12"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           IsVisible="False"
+                           Margin="0,8,0,0" />
+
+                </VerticalStackLayout>
+            </Grid>
+
+            <!-- ════════════════════════════════════════
+                 错误页 — 大气留白 + 精致图标
+                 ════════════════════════════════════════ -->
+            <Grid x:Name="ErrorOverlay"
+                  BackgroundColor="#0f172a"
+                  IsVisible="False"
+                  Opacity="0">
+
+                <VerticalStackLayout VerticalOptions="Center"
+                                     HorizontalOptions="Center"
+                                     Spacing="32"
+                                     Padding="48">
+
+                    <!-- 错误图标 — 大号 + 圆角背景 -->
+                    <Border Stroke="#ef444430"
+                            StrokeThickness="2"
+                            StrokeShape="RoundRectangle 48"
+                            BackgroundColor="#ef444415"
+                            HeightRequest="96"
+                            WidthRequest="96"
+                            HorizontalOptions="Center">
+                        <Label Text="✕"
+                               TextColor="#ef4444"
+                               FontSize="44"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                    </Border>
+
+                    <!-- 错误标题 -->
+                    <VerticalStackLayout Spacing="8" HorizontalOptions="Center">
+                        <Label Text="无法连接后端服务"
+                               TextColor="#f87171"
+                               FontSize="22"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center" />
+
+                        <Label x:Name="ErrorDetail"
+                               Text="请确认：&#10;1. 电脑上已运行 python backend/app.py&#10;2. 后端端口为 5050&#10;3. 模拟器网络正常"
+                               TextColor="#94a3b8"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"
+                               LineHeight="1.6"
+                               Margin="0,4,0,0" />
+                    </VerticalStackLayout>
+
+                    <!-- 重试按钮 — 更大的点击区域 -->
+                    <Button x:Name="BtnRetry"
+                            Text="⟳  重试连接"
+                            BackgroundColor="#38bdf8"
+                            TextColor="#0f172a"
+                            FontSize="15"
+                            FontAttributes="Bold"
+                            CornerRadius="12"
+                            Padding="32,14"
+                            Clicked="OnRefreshClicked"
+                            HorizontalOptions="Center"
+                            Margin="0,8,0,0" />
+
+                    <!-- 自动重试倒计时 -->
+                    <Label x:Name="AutoRetryLabel"
+                           Text=""
+                           TextColor="#64748b"
+                           FontSize="13"
+                           HorizontalOptions="Center"
+                           IsVisible="False" />
+
+                </VerticalStackLayout>
+            </Grid>
+
+        </Grid>
+
+    </Grid>
+
+</ContentPage>

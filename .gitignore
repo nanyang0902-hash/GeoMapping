@@ -1,0 +1,45 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+.eggs/
+venv/
+.venv/
+env/
+
+# ===== SQLite 运行时残留 (WAL/SHM 伴随文件) =====
+*.db-wal
+*.db-shm
+
+# ===== .NET / Visual Studio 构建产物 =====
+bin/
+obj/
+.vs/
+publish/
+*.user
+*.suo
+*.apk
+*.aab
+*.csproj.user
+*.cache
+UpgradeLog*.htm
+_ReSharper*/
+TestResults/
+
+# ===== Node / 前端 =====
+node_modules/
+dist/
+*.log
+
+# ===== 调试残留 =====
+*.bak
+fix_active_tool.js
+fix_app.ps1
+
+# ===== 系统 / 编辑器 =====
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

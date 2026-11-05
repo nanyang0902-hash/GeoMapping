@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地质填图系统 - 桌面端</title>
+    <link rel="stylesheet" href="css/leaflet.css" />
+    <link rel="stylesheet" href="css/leaflet.draw.css" />
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/print-panel.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header id="header">
+        <div class="header-left">
+            <h1>🌍 地质填图系统 <span class="version">v2.0</span></h1>
+            <span class="badge-desktop">桌面端</span>
+        </div>
+        <div class="header-center">
+            <div class="project-selector">
+                <select id="projectSelect">
+                    <option value="">-- 选择项目 --</option>
+                </select>
+                <button id="btnNewProject" title="新建项目">📁 新建</button>
+                <button id="btnProjectInfo" title="项目信息">ℹ️</button>
+            </div>
+        </div>
+        <div class="header-right">
+            <button id="btnPrintLayout" title="专业出图">🖨️ 出图</button>
+            <button id="btnBackHome" title="返回首页">🏠</button>
+            <span id="syncStatus" class="sync-status">● 在线</span>
+        </div>
+    </header>
+
+    <!-- 主布局 -->
+    <div id="mainContainer">
+        <!-- 左侧工具栏 -->
+        <aside id="leftPanel">
+            <div class="panel-tabs">
+                <button class="tab-btn active" data-tab="layers">📑 图层</button>
+                <button class="tab-btn" data-tab="data">📋 数据</button>
+                <button class="tab-btn" data-tab="tools">🔧 工具</button>
+                <button class="tab-btn" data-tab="symbols">🗿 符号</button>
+                <button class="tab-btn" data-tab="strata">🏔️ 地层</button>
+            </div>
+            <div class="panel-content">
+                <!-- 图层面板 -->
+                <div id="tab-layers" class="tab-content active">
+                    <div class="layer-toolbar">
+                        <button id="btnZoomAll" title="缩放到全部数据范围" style="flex:1;font-size:11px;padding:4px 8px;border:0.5px solid var(--separator);border-radius:4px;background:var(--fill-quaternary);color:var(--fill-secondary);cursor:pointer;">🔍 全部范围</button>
+                        <button id="btnLayerStats" title="刷新图层统计" style="font-size:11px;padding:4px 8px;border:0.5px solid var(--separator);border-radius:4px;background:var(--fill-quaternary);color:var(--fill-secondary);cursor:pointer;">🔄</button>
+                    </div>
+                    <div class="layer-list" id="layerList">
+                        <div class="layer-item" data-layer="points">
+                            <input type="checkbox" id="layerPoints" checked>
+                            <label for="layerPoints" title="点击标注缩放到本图层范围">📍 地质点</label>
+                            <span class="layer-count" id="layerCountPoints">0</span>
+                            <button class="layer-action-btn" data-layer="points" title="更多操作">⋯</button>
+                        </div>
+                        <div class="layer-item" data-layer="routes">
+                            <input type="checkbox" id="layerRoutes" checked>
+                            <label for="layerRoutes" title="点击标注缩放到本图层范围">🔵 野外路线</label>
+                            <span class="layer-count" id="layerCountRoutes">0</span>
+                            <button class="layer-action-btn" data-layer="routes" title="更多操作">⋯</button>
+                        </div>
+                        <div class="layer-item" data-layer="boundaries">
+                            <input type="checkbox" id="layerBoundaries" checked>
+                            <label for="layerBoundaries" title="点击标注缩放到本图层范围">🟤 地质界线</label>
+                            <span class="layer-count" id="layerCountBoundaries">0</span>
+                            <button class="layer-action-btn" data-layer="boundaries" title="更多操作">⋯</button>
+                        </div>
+                        <div class="layer-item" data-layer="faults">
+                            <input type="checkbox" id="layerFaults" checked>
+                            <label for="layerFaults" title="点击标注缩放到本图层范围">🔴 断层</label>
+                            <span class="layer-count" id="layerCountFaults">0</span>
+                            <button class="layer-action-btn" data-layer="faults" title="更多操作">⋯</button>
+                        </div>
+                        <div class="layer-item" data-layer="areas">
+                            <input type="checkbox" id="layerAreas" checked>
+                            <label for="layerAreas" title="点击标注缩放到本图层范围">🟡 地层面</label>
+                            <span class="layer-count" id="layerCountAreas">0</span>
+                            <button class="layer-action-btn" data-layer="areas" title="更多操作">⋯</button>
+                        </div>
+                        <div class="layer-item" data-layer="photos">
+                            <input type="checkbox" id="layerPhotos" checked>
+                            <label for="layerPhotos" title="点击标注缩放到本图层范围">📷 照片点</label>
+                            <span class="layer-count" id="layerCountPhotos">0</span>
+                            <button class="layer-action-btn" data-layer="photos" title="更多操作">⋯</button>
+                        </div>
+                        <div class="layer-item" data-layer="navigation">
+                            <input type="checkbox" id="layerNavigation">
+                            <label for="layerNavigation" title="A→B路径规划导航路线">🗺️ 导航路线</label>
+                            <button class="layer-action-btn" data-layer="navigation" title="更多操作">⋯</button>
+                        </div>
+                    </div>
+                    <div class="layer-actions">
+                        <select id="baseMapSelect">
+                            <!-- JS 动态填充在线底图 -->
+                        </select>
+                        <div class="layer-item dem-item" style="margin-top:6px;padding:4px 8px;">
+                            <input type="checkbox" id="layerDEM">
+                            <label for="layerDEM" title="叠加地形阴影，用于查看地形起伏">🌄 地形阴影</label>
+                        </div>
+                    </div>
+                    <!-- 图层操作弹出菜单 -->
+                    <div id="layerActionMenu" class="layer-action-menu" style="display:none;">
+                        <div class="layer-menu-item" data-action="zoom-layer">🔍 缩放至本图层</div>
+                        <div class="layer-menu-item" data-action="export-layer-geojson">📤 导出 GeoJSON</div>
+                        <div class="layer-menu-item" data-action="export-layer-csv">📊 导出 CSV</div>
+                        <div class="layer-menu-item" data-action="show-attrs">📋 查看属性表</div>
+                    </div>
+                </div>
+
+                <!-- 工具面板 -->
+                <div id="tab-tools" class="tab-content">
+                    <h3>空间编辑工具</h3>
+                    <div class="tool-buttons">
+                        <button class="tool-btn" data-action="draw-point" title="绘制地质点">📍 绘点</button>
+                        <button class="tool-btn" data-action="draw-line" title="绘制界线">📏 绘线</button>
+                        <button class="tool-btn" data-action="draw-polygon" title="绘制面">⏹️ 绘面</button>
+                        <button class="tool-btn" data-action="edit-feature" title="编辑要素">✏️ 编辑</button>
+                        <button class="tool-btn" data-action="delete-feature" title="删除要素">🗑️ 删除</button>
+                    </div>
+                    <hr>
+                    <h3>定位与导航</h3>
+                    <div class="tool-buttons">
+                        <button class="tool-btn" id="btnGpsLocate" data-action="gps-locate" title="定位当前位置">📍 我的位置</button>
+                        <button class="tool-btn" id="btnGpsAddPoint" data-action="gps-add-point" title="在当前位置添加地质点">➕ 在此采点</button>
+                        <button class="tool-btn" data-action="navigate-to-point" title="导航至已有调查点">🧭 至调查点</button>
+                        <button class="tool-btn" data-action="route-navigation" title="A→B路径规划导航" style="background:var(--accent);color:#fff">🗺️ 路径导航</button>
+                    </div>
+                    <hr>
+                    <h3>测量工具</h3>
+                    <div class="tool-buttons">
+                        <button class="tool-btn" data-action="measure-distance" title="距离量测">📐 测距</button>
+                        <button class="tool-btn" data-action="measure-area" title="面积量测">📏 测面</button>
+                        <button class="tool-btn" data-action="measure-bearing" title="方位角">🧭 方位</button>
+                        <button class="tool-btn" data-action="measure-slope" title="坡度量测（选两点计算坡度）">⛰️ 坡度</button>
+                    </div>
+                    <hr>
+                    <h3>检查工具</h3>
+                    <div class="tool-buttons">
+                        <button class="tool-btn" data-action="topology-check" title="拓扑检查">🔍 拓扑检查</button>
+                        <button class="tool-btn" data-action="data-check" title="数据完整性检查">✅ 数据检查</button>
+                    </div>
+                </div>
+
+                <!-- 数据管理面板 -->
+                <div id="tab-data" class="tab-content">
+                    <h3>导入导出</h3>
+                    <div class="tool-buttons" style="margin-bottom:10px">
+                        <button class="tool-btn" data-action="import-data" title="导入Shapefile">📥 导入</button>
+                        <button class="tool-btn" data-action="export-geojson" title="导出GeoJSON">📤 GeoJSON</button>
+                        <button class="tool-btn" data-action="export-csv" title="导出CSV">📊 CSV</button>
+                        <button class="tool-btn" data-action="export-kml" title="导出KML">🌐 KML</button>
+                        <button class="tool-btn" data-action="export-shp" title="导出Shapefile">📦 SHP</button>
+                        <button class="tool-btn" data-action="convert-crs" title="坐标转换 (CGCS2000↔WGS84)">🗺️ 坐标转换</button>
+                    </div>
+                    <hr>
+                    <div style="margin-bottom:6px;display:flex;gap:6px">
+                        <button id="btnRefreshData" class="tool-btn" style="flex:1" onclick="App.refreshDataPanel()">🔄 刷新列表</button>
+                    </div>
+                    <div id="dataPanelContent">
+                        <p class="placeholder">请先选择项目</p>
+                    </div>
+                </div>
+
+                <!-- 符号面板 -->
+                <div id="tab-symbols" class="tab-content">
+                    <h3>地质符号库</h3>
+                    <div id="symbolCategories"></div>
+                </div>
+
+                <!-- 地层面板 -->
+                <div id="tab-strata" class="tab-content">
+                    <h3>地层单元管理</h3>
+                    <div style="display:flex;gap:6px;margin-bottom:10px">
+                        <button class="tool-btn" onclick="App.showStrataForm()" style="flex:1">➕ 添加地层</button>
+                        <button class="tool-btn" onclick="App.loadStrataList()" style="font-size:11px">🔄</button>
+                    </div>
+                    <div id="strataList" style="font-size:12px"></div>
+                    <div id="strataForm" style="display:none;margin-top:10px">
+                        <h4 style="margin-bottom:8px">➕ 添加/编辑地层</h4>
+                        <div style="display:flex;flex-direction:column;gap:6px">
+                            <input type="text" id="dsCode" placeholder="地层代号" style="padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid var(--separator)">
+                            <input type="text" id="dsName" placeholder="地层名称" style="padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid var(--separator)">
+                            <input type="text" id="dsAge" placeholder="地质时代" style="padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid var(--separator)">
+                            <input type="text" id="dsLithology" placeholder="岩性" style="padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid var(--separator)">
+                            <textarea id="dsDesc" placeholder="描述" rows="2" style="padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid var(--separator);resize:vertical"></textarea>
+                            <input type="color" id="dsColor" value="#808080" style="width:100%;height:32px">
+                            <div style="display:flex;gap:6px">
+                                <input type="number" id="dsMinThick" placeholder="最小厚度(m)" style="flex:1;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid var(--separator)">
+                                <input type="number" id="dsMaxThick" placeholder="最大厚度(m)" style="flex:1;padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid var(--separator)">
+                            </div>
+                            <select id="dsContact" style="padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid var(--separator)">
+                                <option value="">-- 接触关系 --</option>
+                                <option>整合接触</option>
+                                <option>不整合接触</option>
+                                <option>侵入接触</option>
+                                <option>断层接触</option>
+                            </select>
+                            <textarea id="dsRemarks" placeholder="备注" rows="2" style="padding:6px;border-radius:4px;background:var(--bg);color:var(--text);border:1px solid var(--separator);resize:vertical"></textarea>
+                            <div style="display:flex;gap:6px">
+                                <button class="tool-btn" onclick="App.saveStratum()" style="flex:1;background:var(--accent);color:#fff">💾 保存</button>
+                                <button class="tool-btn" onclick="App.cancelStrataForm()">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 地图容器 -->
+        <main id="mapContainer">
+            <div id="map"></div>
+            <div id="mapInfo">
+                <span id="coordDisplay">经度: --  纬度: --</span>
+                <span id="elevDisplay">高程: -- m</span>
+                <span id="scaleDisplay">比例尺: --</span>
+                <span id="zoomDisplay">级别: --</span>
+            </div>
+            <div id="measureResult" style="display:none;"></div>
+        </main>
+
+        <!-- 右侧属性面板 -->
+        <aside id="rightPanel">
+            <div class="panel-header">
+                <h3>📋 属性信息</h3>
+                <button id="btnClosePanel">✕</button>
+            </div>
+            <div id="attributeContent">
+                <p class="placeholder">点击地图要素查看属性</p>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 底部状态栏 -->
+    <footer id="statusBar">
+        <span id="pointCount">地质点: 0</span>
+        <span id="routeCount">路线: 0</span>
+        <span id="featureCount">要素: 0</span>
+        <span id="apiStatus">API: 检测中...</span>
+    </footer>
+
+    <!-- 模态框容器 -->
+    <div id="modalOverlay" class="modal-overlay" style="display:none;">
+        <div id="modalContent" class="modal-content"></div>
+    </div>
+
+    <!-- 右键菜单 -->
+    <div id="contextMenu" class="context-menu" style="display:none;">
+        <div class="context-item" data-action="edit-feature">✏️ 编辑属性</div>
+        <div class="context-item" data-action="edit-geometry">🔷 编辑几何</div>
+        <div class="context-item" data-action="delete-point">🗑️ 删除此要素</div>
+        <div class="context-item" data-action="navigate-to">🧭 导航至此</div>
+        <hr>
+        <div class="context-item" data-action="copy-coords">📋 复制坐标</div>
+    </div>
+
+    <!-- 出图模态框 -->
+    <div id="printPanelOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;flex-direction:column;overflow:hidden;">
+
+    <!-- 顶部工具栏 -->
+    <div id="printPanelToolbar">
+        <div class="tb-group">
+            <button onclick="PrintPanel.newLayout()" title="新建布局">📄 新建</button>
+            <button onclick="PrintPanel.saveLayout()" title="保存布局">💾 保存</button>
+            <button onclick="PrintPanel.loadLayout()" title="加载布局">📂 加载</button>
+        </div>
+        <div class="tb-group">
+            <label>纸张:</label>
+            <select id="printPanelPaperPreset" onchange="PrintPanel.setPaperPreset(this.value)">
+                <option value="A4_L">A4 横 (297×210)</option>
+                <option value="A4_P">A4 竖 (210×297)</option>
+                <option value="A3_L" selected>A3 横 (420×297)</option>
+                <option value="A3_P">A3 竖 (297×420)</option>
+                <option value="CUSTOM">自定义</option>
+            </select>
+            <input type="number" id="printPanelPaperW" value="420" min="50" max="2000" onchange="PrintPanel.setPaperCustom()" style="width:50px">×
+            <input type="number" id="printPanelPaperH" value="297" min="50" max="2000" onchange="PrintPanel.setPaperCustom()" style="width:50px">mm
+        </div>
+        <div class="tb-group">
+            <label>地图比例:</label>
+            <select id="printPanelMapScale" onchange="PrintPanel.setMapScale(this.value)">
+                <option value="auto" selected>自动</option>
+                <option value="10000">1:1万</option>
+                <option value="25000">1:2.5万</option>
+                <option value="50000">1:5万</option>
+                <option value="100000">1:10万</option>
+                <option value="250000">1:25万</option>
+            </select>
+        </div>
+        <div class="tb-group">
+            <label><input type="checkbox" id="printPanelShowGraticule" checked onchange="PrintPanel.toggleGraticule()"> 坐标网</label>
+            <select id="printPanelGraticuleInterval" onchange="PrintPanel.setGraticuleInterval(this.value)">
+                <option value="0.5">0.5°</option>
+                <option value="0.25">0.25°</option>
+                <option value="0.1">0.1°</option>
+                <option value="0.05">0.05°</option>
+                <option value="0.02" selected>0.02°</option>
+                <option value="0.01">0.01°</option>
+            </select>
+        </div>
+        <div class="tb-group">
+            <label>DPI:</label>
+            <select id="printPanelDpiSelect" onchange="PrintPanel.setDpi(this.value)">
+                <option value="150">150</option>
+                <option value="300" selected>300</option>
+                <option value="600">600</option>
+            </select>
+        </div>
+        <div class="tb-group">
+            <button onclick="PrintPanel.zoomIn()">🔍+</button>
+            <button onclick="PrintPanel.zoomOut()">🔍-</button>
+            <button onclick="PrintPanel.zoomFit()">📐 适合</button>
+        </div>
+        <div class="tb-group" style="margin-left:auto">
+            <button onclick="PrintPanel.close()" title="关闭出图">✕ 关闭</button>
+            <button onclick="PrintPanel.exportPdf()" style="background:#d4380d;border-color:#d4380d">📕 导出PDF</button>
+            <button onclick="PrintPanel.exportPng()">🖼️ PNG</button>
+        </div>
+    </div>
+
+    <!-- 主布局 -->
+    <div id="printPanelMain">
+        <!-- 左侧：元素面板 -->
+        <div id="printPanelLeft">
+            <h3>📦 制图元素</h3>
+            
+            <div class="element-category">数据框</div>
+            <div class="element-palette-item" onclick="PrintPanel.addElement('data-frame')">
+                <span class="ep-icon">🗺️</span> 数据框（地图）
+            </div>
+            
+            <div class="element-category">图廓</div>
+            <div class="element-palette-item" onclick="PrintPanel.addElement('graticule')">
+                <span class="ep-icon">🌐</span> 经纬格网
+            </div>
+            
+            <div class="element-category">比例尺</div>
+            <div class="element-palette-item" onclick="PrintPanel.addElement('scale-bar')">
+                <span class="ep-icon">📏</span> 线段比例尺
+            </div>
+            <div class="element-palette-item" onclick="PrintPanel.addElement('scale-text')">
+                <span class="ep-icon">🔢</span> 数字比例尺
+            </div>
+            
+            <div class="element-category">方向</div>
+            <div class="element-palette-item" onclick="PrintPanel.addElement('north-arrow')">
+                <span class="ep-icon">🧭</span> 指北针
+            </div>
+            
+            <div class="element-category">图例</div>
+            <div class="element-palette-item" onclick="PrintPanel.addElement('legend')">
+                <span class="ep-icon">📋</span> 图例
+            </div>
+            
+            <div class="element-category">文字</div>
+            <div class="element-palette-item" onclick="PrintPanel.addElement('title')">
+                <span class="ep-icon">✏️</span> 标题
+            </div>
+            <div class="element-palette-item" onclick="PrintPanel.addElement('sub-title')">
+                <span class="ep-icon">📝</span> 副标题
+            </div>
+            <div class="element-palette-item" onclick="PrintPanel.addElement('credits')">
+                <span class="ep-icon">📋</span> 制图信息（责任栏）
+            </div>
+            
+            <div class="element-category">标注</div>
+            <div class="element-palette-item" onclick="PrintPanel.addElement('label')">
+                <span class="ep-icon">🏷️</span> 文字标注
+            </div>
+        </div>
+
+        <!-- 中央：画布 -->
+        <div id="printPanelCanvasArea">
+            <div id="printPanelLayoutCanvas"></div>
+        </div>
+
+        <!-- 右侧：属性面板 -->
+        <div id="printPanelRight">
+            <h3>📐 属性</h3>
+            <div id="printPanelPropPanel" class="prop-empty">点击画布上的元素<br>查看和编辑属性</div>
+        </div>
+    </div>
+
+    <!-- 导出遮罩 -->
+    <div id="printPanelExportOverlay">
+        <div class="export-spinner"></div>
+        <div class="export-text" id="printPanelExportText">正在渲染...</div>
+    </div>
+
+    <!-- 缩放指示器 -->
+    <div id="printPanelZoomIndicator">100%</div>
+
+    </div>
+
+    <script src="js/leaflet.js?v=3"></script>
+    <script src="js/leaflet.draw.js?v=3"></script>
+    <script src="js/api.js?v=3"></script>
+    <script src="js/map.js?v=3"></script>
+    <script src="js/editor.js?v=3"></script>
+    <script src="js/symbols.js?v=3"></script>
+    <script src="js/app.js?v=3"></script>
+    <script src="js/print-panel.js?v=1"></script>
+    <script src="js/navigation.js?v=1"></script>
+</body>
+</html>

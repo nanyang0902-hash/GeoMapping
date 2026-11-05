@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#faf7f2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="manifest.json">
+    <title>地质填图 · 移动端</title>
+    <script src="js/capacitor-adapter.js"></script>
+    <link rel="stylesheet" href="css/leaflet.css" />
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!--  Header — 玻璃态导航栏                                        -->
+    <!-- ============================================================ -->
+    <header id="mobileHeader">
+        <button id="btnMenu" class="icon-btn" aria-label="菜单">☰</button>
+        <div class="header-title">
+            <span id="gpsStatus" class="gps-indicator">📍 定位中…</span>
+            <span id="recordStatus" class="record-indicator" style="display:none">● 记录中</span>
+        </div>
+        <div class="header-actions">
+            <button id="btnSync" class="icon-btn" aria-label="同步">🔄</button>
+            <button id="btnLayers" class="icon-btn" aria-label="图层">🗺️</button>
+        </div>
+    </header>
+
+    <!-- ============================================================ -->
+    <!--  Map Container                                                -->
+    <!-- ============================================================ -->
+    <div id="mobileMap"></div>
+
+    <!-- ============================================================ -->
+    <!--  GPS Info Bar                                                 -->
+    <!-- ============================================================ -->
+    <div id="gpsInfoBar">
+        <span id="gpsCoords">--</span>
+        <span id="gpsElevation">高程: --</span>
+        <span id="gpsAccuracy">精度: --</span>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  模拟 GPS 栏（桌面预览时显示）                                  -->
+    <!-- ============================================================ -->
+    <div id="mockGpsBar" style="display:none">
+        <span class="mock-label">📍 模拟GPS</span>
+        <input id="mockLat" type="text" placeholder="纬度" value="35.0">
+        <input id="mockLng" type="text" placeholder="经度" value="105.0">
+        <button onclick="MobileApp.setMockGps()">定位</button>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  Floating Locate Button — 地图定位按钮                          -->
+    <!-- ============================================================ -->
+    <button id="btnLocate" class="map-locate-btn" onclick="MobileApp.locateMe()" aria-label="定位到当前位置">
+        <span class="locate-icon">◎</span>
+    </button>
+
+    <!-- ============================================================ -->
+    <!--  Location Info Card — 经纬度信息卡片                           -->
+    <!-- ============================================================ -->
+    <div id="locationCard" class="location-card">
+        <div class="loc-card-row">
+            <span class="loc-card-label">纬度</span>
+            <span id="locLat" class="loc-card-value">--</span>
+        </div>
+        <div class="loc-card-divider"></div>
+        <div class="loc-card-row">
+            <span class="loc-card-label">经度</span>
+            <span id="locLng" class="loc-card-value">--</span>
+        </div>
+        <div class="loc-card-divider"></div>
+        <div class="loc-card-row">
+            <span class="loc-card-label">高程</span>
+            <span id="locElev" class="loc-card-value">--</span>
+        </div>
+        <div class="loc-card-divider"></div>
+        <div class="loc-card-row">
+            <span class="loc-card-label">精度</span>
+            <span id="locAcc" class="loc-card-value">--</span>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  Footer — 玻璃态标签栏                                        -->
+    <!-- ============================================================ -->
+    <footer id="mobileFooter">
+        <button class="footer-btn active" data-page="map">
+            <span class="btn-icon">🗺️</span>
+            <span class="btn-label">地图</span>
+        </button>
+        <button class="footer-btn" data-page="collect">
+            <span class="btn-icon">📍</span>
+            <span class="btn-label">采集</span>
+        </button>
+        <button class="footer-btn record-btn" id="btnRecord" data-action="record">
+            <span class="btn-icon record-icon">⏺️</span>
+            <span class="btn-label">记录</span>
+        </button>
+        <button class="footer-btn" data-page="data">
+            <span class="btn-icon">📋</span>
+            <span class="btn-label">数据</span>
+        </button>
+        <button class="footer-btn" data-page="nav" data-action="navigate">
+            <span class="btn-icon">🧭</span>
+            <span class="btn-label">导航</span>
+        </button>
+        <button class="footer-btn" data-page="settings">
+            <span class="btn-icon">⚙️</span>
+            <span class="btn-label">设置</span>
+        </button>
+    </footer>
+
+    <!-- ============================================================ -->
+    <!--  Overlay                                                      -->
+    <!-- ============================================================ -->
+    <div id="panelOverlay" class="overlay" onclick="MobileApp.closeAllPanels()"></div>
+
+    <!-- ============================================================ -->
+    <!--  Side Menu — 菜单                                             -->
+    <!-- ============================================================ -->
+    <div id="sideMenu" class="side-panel">
+        <div class="panel-head">
+            <h3>菜单</h3>
+            <button class="close-btn" onclick="MobileApp.closeSideMenu()">✕</button>
+        </div>
+        <div class="panel-body">
+            <div class="menu-section">
+                <h4 class="menu-label">项目管理</h4>
+                <select id="mobileProjectSelect" onchange="MobileApp.switchProject(this.value)">
+                    <option value="">-- 选择项目 --</option>
+                </select>
+                <button class="menu-btn" onclick="MobileApp.showNewProject()">📁 新建项目</button>
+            </div>
+            <div class="menu-section">
+                <h4 class="menu-label">功能</h4>
+                <button class="menu-btn" onclick="MobileApp.showStrataPanel()">🗿 地层管理</button>
+                <button class="menu-btn" onclick="MobileApp.showRouteLog()">📝 路线日志</button>
+                <button class="menu-btn" onclick="MobileApp.showSampleLedger()">🧪 样品台账</button>
+                <button class="menu-btn" onclick="MobileApp.syncData()">🔄 同步到服务器</button>
+                <button class="menu-btn" onclick="MobileApp.exportLocalData()">📤 导出本地数据</button>
+            </div>
+            <div class="menu-section">
+                <h4 class="menu-label">路线回放</h4>
+                <select id="routeReplaySelect" onchange="MobileApp.replayRoute(this.value)">
+                    <option value="">-- 选择历史路线 --</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  Layer Panel — 图层控制（右侧滑入）                             -->
+    <!-- ============================================================ -->
+    <div id="layerPanel" class="side-panel right-panel">
+        <div class="panel-head">
+            <h3>图层</h3>
+            <button class="close-btn" onclick="MobileApp.closeLayerPanel()">✕</button>
+        </div>
+        <div class="panel-body">
+            <!-- 图层开关 -->
+            <div class="layer-item">
+                <input type="checkbox" id="mlBaseMap" checked onchange="MobileApp.toggleLayer('base')">
+                <label for="mlBaseMap">底图</label>
+            </div>
+            <div class="layer-item">
+                <input type="checkbox" id="mlPoints" checked onchange="MobileApp.toggleLayer('points')">
+                <label for="mlPoints">地质点</label>
+            </div>
+            <div class="layer-item">
+                <input type="checkbox" id="mlRoute" checked onchange="MobileApp.toggleLayer('route')">
+                <label for="mlRoute">当前路线</label>
+            </div>
+            <div class="layer-item">
+                <input type="checkbox" id="mlTrack" checked onchange="MobileApp.toggleLayer('track')">
+                <label for="mlTrack">GPS 轨迹</label>
+            </div>
+
+            <div class="panel-divider"></div>
+
+            <!-- 底图选择 — 对齐桌面端 BASE_MAPS -->
+            <h4 class="menu-label">底图类型</h4>
+            <select id="mobileBaseMap" onchange="MobileApp.switchBaseMap(this.value)">
+                <option value="amap">高德街道图</option>
+                <option value="amap_sat">高德卫星+路网</option>
+                <option value="esri_sat">Esri 卫星影像</option>
+                <option value="esri_topo">Esri 地形图</option>
+            </select>
+
+            <!-- 地形阴影叠加（对齐桌面端 DEM checkbox） -->
+            <div class="layer-item" style="margin-top:8px">
+                <input type="checkbox" id="mlDem" onchange="MobileApp.toggleLayer('dem')">
+                <label for="mlDem">🌄 地形阴影</label>
+            </div>
+
+            <div class="panel-divider"></div>
+
+            <h4 class="menu-label">坐标系统</h4>
+            <select id="mobileCrs" onchange="MobileApp.switchCrs(this.value)">
+                <option value="WGS84">WGS84</option>
+                <option value="CGCS2000">CGCS2000</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  Collect Panel — 地质点采集                                    -->
+    <!-- ============================================================ -->
+    <div id="collectPanel" class="side-panel">
+        <div class="panel-head">
+            <h3>地质点采集</h3>
+            <button class="close-btn" onclick="MobileApp.closeCollectPanel()">✕</button>
+        </div>
+        <div class="panel-body">
+            <form id="collectForm" class="collect-form" onsubmit="return false;">
+                <div class="form-row">
+                    <label for="cfPointType">点类型</label>
+                    <select id="cfPointType" required>
+                        <option value="地质观察点">地质观察点</option>
+                        <option value="构造测量点">构造测量点</option>
+                        <option value="样品点">样品点</option>
+                        <option value="照片点">照片点</option>
+                        <option value="地貌点">地貌点</option>
+                        <option value="水文点">水文点</option>
+                        <option value="工程地质点">工程地质点</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="cfPointNumber">点编号</label>
+                    <input type="text" id="cfPointNumber" placeholder="自动生成">
+                </div>
+                <div class="form-row">
+                    <label for="cfLat">纬度</label>
+                    <input type="text" id="cfLat" readonly>
+                </div>
+                <div class="form-row">
+                    <label for="cfLng">经度</label>
+                    <input type="text" id="cfLng" readonly>
+                </div>
+                <div class="form-row">
+                    <label for="cfElevation">高程 (m)</label>
+                    <input type="text" id="cfElevation" readonly>
+                </div>
+                <div class="form-row">
+                    <label for="cfAccuracy">精度 (m)</label>
+                    <input type="text" id="cfAccuracy" readonly>
+                </div>
+                <div class="form-row">
+                    <label for="cfRockType">岩石类型</label>
+                    <select id="cfRockType">
+                        <option value="">-- 选择 --</option>
+                        <option>沉积岩</option><option>岩浆岩</option><option>变质岩</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="cfStratumAge">地层时代</label>
+                    <input type="text" id="cfStratumAge" placeholder="例如: J-侏罗系">
+                </div>
+                <div class="form-row">
+                    <label for="cfDescription">地质描述</label>
+                    <textarea id="cfDescription" rows="3" placeholder="岩性、构造、地貌特征…"></textarea>
+                </div>
+                <div class="form-row">
+                    <label for="cfPhoto">📷 拍照</label>
+                    <input type="file" id="cfPhoto" accept="image/*" capture="environment" multiple>
+                </div>
+                <div id="cfPhotoPreview" class="photo-preview"></div>
+                <button type="button" class="submit-btn" onclick="MobileApp.submitPoint()">
+                    保存地质点
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  Data Panel — 采集数据列表                                     -->
+    <!-- ============================================================ -->
+    <div id="dataPanel" class="side-panel">
+        <div class="panel-head">
+            <h3>采集数据</h3>
+            <button class="close-btn" onclick="MobileApp.closeDataPanel()">✕</button>
+        </div>
+        <div class="panel-body">
+            <div class="filter-bar">
+                <select id="dataFilter" onchange="MobileApp.loadLocalPoints()">
+                    <option value="">全部类型</option>
+                    <option value="地质观察点">地质观察点</option>
+                    <option value="构造测量点">构造测量点</option>
+                    <option value="样品点">样品点</option>
+                    <option value="照片点">照片点</option>
+                </select>
+            </div>
+            <div id="dataList" class="data-list">
+                <p class="placeholder">暂无采集数据</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  Settings Panel                                               -->
+    <!-- ============================================================ -->
+    <div id="settingsPanel" class="side-panel">
+        <div class="panel-head">
+            <h3>设置</h3>
+            <button class="close-btn" onclick="MobileApp.closeSettingsPanel()">✕</button>
+        </div>
+        <div class="panel-body">
+            <div class="form-row">
+                <label for="setGpsInterval">GPS 采集间隔 (秒)</label>
+                <input type="number" id="setGpsInterval" value="5" min="1" max="60">
+            </div>
+            <div class="form-row">
+                <label for="setTrackDistance">轨迹记录间隔 (米)</label>
+                <input type="number" id="setTrackDistance" value="10" min="1" max="100">
+            </div>
+            <div class="form-row">
+                <label for="setServerUrl">服务器地址</label>
+                <input type="text" id="setServerUrl" value="/api">
+            </div>
+            <div class="form-row">
+                <label>离线地图缓存</label>
+                <button class="menu-btn" onclick="MobileApp.cacheMapArea()">📥 缓存当前区域</button>
+            </div>
+            <div class="form-row" style="margin-top:16px">
+                <span class="version-label">地质填图 · 移动端 v1.0.0</span>
+            </div>
+            <button class="submit-btn" onclick="MobileApp.saveSettings()">保存设置</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  Strata Panel — 地层管理                                       -->
+    <!-- ============================================================ -->
+    <div id="strataPanel" class="side-panel">
+        <div class="panel-head">
+            <h3>地层单元管理</h3>
+            <button class="close-btn" onclick="MobileApp.closeStrataPanel()">✕</button>
+        </div>
+        <div class="panel-body">
+            <div id="strataListContainer">
+                <div id="strataList" class="data-list">
+                    <p class="placeholder">暂无地层单元</p>
+                </div>
+            </div>
+            <div id="strataForm" style="display:none">
+                <h4 class="menu-label" style="margin-bottom:12px">添加 / 编辑地层</h4>
+                <div class="collect-form">
+                    <div class="form-row"><label for="sfCode">地层代号</label><input type="text" id="sfCode" placeholder="如: J2"></div>
+                    <div class="form-row"><label for="sfName">地层名称</label><input type="text" id="sfName" placeholder="如: 中侏罗统"></div>
+                    <div class="form-row"><label for="sfAge">地质时代</label><input type="text" id="sfAge" placeholder="如: 侏罗纪"></div>
+                    <div class="form-row"><label for="sfLithology">岩性</label><input type="text" id="sfLithology" placeholder="如: 砂岩"></div>
+                    <div class="form-row"><label for="sfDesc">描述</label><textarea id="sfDesc" rows="2" placeholder="岩性特征…"></textarea></div>
+                    <div class="form-row"><label for="sfColor">颜色</label><input type="color" id="sfColor" value="#808080"></div>
+                    <div class="form-row"><label for="sfMinThick">厚度最小 (m)</label><input type="number" id="sfMinThick" placeholder="0"></div>
+                    <div class="form-row"><label for="sfMaxThick">厚度最大 (m)</label><input type="number" id="sfMaxThick" placeholder="0"></div>
+                    <div class="form-row"><label for="sfContact">接触关系</label><select id="sfContact"><option value="">-- 选择 --</option><option>整合接触</option><option>不整合接触</option><option>侵入接触</option><option>断层接触</option></select></div>
+                    <div class="form-row"><label for="sfRemarks">备注</label><textarea id="sfRemarks" rows="2"></textarea></div>
+                    <button type="button" class="submit-btn" onclick="MobileApp.saveStratum()">保存</button>
+                    <button type="button" class="menu-btn" style="margin-top:8px" onclick="MobileApp.cancelStrataForm()">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!--  路径导航面板                                                   -->
+    <!-- ============================================================ -->
+    <div id="navPanel" class="side-panel"></div>
+
+    <!-- ============================================================ -->
+    <!--  Toast                                                        -->
+    <!-- ============================================================ -->
+    <div id="toast" class="toast"></div>
+
+    <script src="js/leaflet.js"></script>
+    <script src="/desktop/js/api.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/gps.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/storage.js"></script>
+</body>
+</html>

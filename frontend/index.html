@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地质填图系统 - Geological Mapping System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .container { text-align: center; max-width: 900px; padding: 40px 20px; }
+        h1 { font-size: 2.8em; margin-bottom: 10px; background: linear-gradient(90deg, #00d2ff, #3a7bd5); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { font-size: 1.2em; color: #8892b0; margin-bottom: 50px; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 20px; }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 40px 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: #fff;
+            display: block;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(0,210,255,0.5);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        .card-icon { font-size: 3em; margin-bottom: 20px; }
+        .card h2 { font-size: 1.5em; margin-bottom: 12px; color: #00d2ff; }
+        .card p { color: #8892b0; line-height: 1.6; font-size: 0.95em; }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            margin-top: 15px;
+        }
+        .badge-desktop { background: rgba(58,123,213,0.3); color: #5b9cf5; }
+        .badge-mobile { background: rgba(0,210,255,0.3); color: #00d2ff; }
+        .features { margin-top: 50px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+        .feature-tag {
+            background: rgba(255,255,255,0.08);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            color: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌍 地质填图系统</h1>
+        <p class="subtitle">Geological Mapping System — 移动端野外采集 + 桌面端数据处理</p>
+
+        <div class="cards">
+            <a href="/desktop/" class="card">
+                <div class="card-icon">🖥️</div>
+                <h2>桌面端 APP</h2>
+                <p>地质空间数据编辑、地质图编绘、野外数据接收与整理、拓扑检查、符号库管理、多格式导入导出</p>
+                <span class="badge badge-desktop">Desktop Application</span>
+            </a>
+            <a href="/mobile/" class="card">
+                <div class="card-icon">📱</div>
+                <h2>移动端 APP</h2>
+                <p>GPS定位与轨迹记录、野外地质点采集、照片拍照关联、离线地图支持、数据同步上传</p>
+                <span class="badge badge-mobile">Mobile PWA</span>
+            </a>
+        </div>
+
+        <div class="features">
+            <span class="feature-tag">🗺️ 在线/离线地图</span>
+            <span class="feature-tag">📍 GPS实时定位</span>
+            <span class="feature-tag">📝 野外数据采集</span>
+            <span class="feature-tag">🖊️ 空间数据编辑</span>
+            <span class="feature-tag">🔍 拓扑检查</span>
+            <span class="feature-tag">🗿 地质符号库</span>
+            <span class="feature-tag">📊 样品台账</span>
+            <span class="feature-tag">📷 照片管理</span>
+            <span class="feature-tag">🔄 数据同步</span>
+            <span class="feature-tag">📥 GeoJSON/KML/CSV导出</span>
+        </div>
+    </div>
+</body>
+</html>

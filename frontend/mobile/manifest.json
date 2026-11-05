@@ -1,0 +1,23 @@
+{
+    "name": "地质填图系统 - 移动端",
+    "short_name": "地质填图",
+    "description": "地质填图野外数据采集移动APP",
+    "start_url": "/mobile/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#1a1a2e",
+    "theme_color": "#1a1a2e",
+    "icons": [
+        {
+            "src": "/mobile/assets/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/mobile/assets/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "categories": ["geospatial", "utilities", "productivity"]
+}

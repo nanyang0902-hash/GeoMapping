@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Maui.SplashTheme：应用启动时的闪屏主题
+        windowBackground 必须在 MAUI 内容就绪前显示，与 ContentPage 背景色一致避免闪烁
+    -->
+    <style name="Maui.SplashTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowBackground">#0f172a</item>
+        <item name="android:statusBarColor">#0f172a</item>
+        <item name="android:navigationBarColor">#0f172a</item>
+    </style>
+</resources>

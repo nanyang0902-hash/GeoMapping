@@ -1,0 +1,449 @@
+/* ═══════════════════════════════════════════════════════════
+   地质填图系统 — 专业出图页面样式（ArcGIS Pro 深色主题）
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+    --bg-dark:        #1a1a1a;
+    --panel-bg:       #252525;
+    --toolbar-bg:     #2a2a2a;
+    --paper-bg:       #ffffff;
+    --accent:         #0066ff;
+    --border:         #3a3a3a;
+    --btn-bg:         #3a3a3a;
+    --btn-border:     #4a4a4a;
+    --btn-hover:      #4a4a4a;
+    --input-bg:       #3a3a3a;
+    --input-border:   #4a4a4a;
+    --text-primary:   #ddd;
+    --text-secondary: #999;
+    --separator:      #3a3a3a;
+    --handle-size:    8px;
+    --toolbar-h:      44px;
+}
+
+#printPanelOverlay,
+#printPanelOverlay * { margin: 0; padding: 0; box-sizing: border-box; }
+
+#printPanelOverlay {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+}
+
+/* ── 顶部工具栏 ─────────────────────────────── */
+#printPanelToolbar {
+    height: var(--toolbar-h);
+    background: var(--toolbar-bg);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: 100;
+}
+#printPanelToolbar .tb-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 8px;
+    border-right: 1px solid var(--separator);
+}
+#printPanelToolbar .tb-group:last-child { border-right: none; }
+
+#printPanelToolbar button {
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-border);
+    color: var(--text-primary);
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+}
+#printPanelToolbar button:hover { background: var(--btn-hover); }
+#printPanelToolbar button.active { background: var(--accent); border-color: var(--accent); }
+
+/* 导出PDF按钮 — 红色 */
+#printPanelToolbar button[onclick*="exportPdf"],
+#printPanelToolbar .tb-group button[style*="background:#d4380d"],
+#printPanelToolbar button.pdf-export {
+    background: #d4380d;
+    border-color: #d4380d;
+    color: #fff;
+}
+
+#printPanelToolbar select,
+#printPanelToolbar input[type="number"] {
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    color: var(--text-primary);
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+#printPanelToolbar input[type="number"] { width: 60px; }
+
+#printPanelToolbar label {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* ── 主布局（左面板 + 画布 + 右面板） ──────── */
+#printPanelMain {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ── 左侧元素面板 ──────────────────────────── */
+#printPanelLeft {
+    width: 200px;
+    background: var(--panel-bg);
+    border-right: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+#printPanelLeft h3 {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+}
+
+.element-category {
+    font-size: 11px;
+    color: #888;
+    margin-top: 12px;
+    margin-bottom: 4px;
+    padding: 4px 0;
+    border-bottom: 0.5px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.element-palette-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    margin: 2px 0;
+    border-radius: 6px;
+    cursor: grab;
+    font-size: 12px;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+}
+.element-palette-item:hover {
+    background: #333;
+    border-color: #444;
+}
+.element-palette-item .ep-icon { font-size: 18px; }
+
+/* ── 画布区域 ──────────────────────────────── */
+#printPanelCanvasArea {
+    flex: 1;
+    background: var(--bg-dark);
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 30px 30px;
+    position: relative;
+    overflow: auto;
+}
+
+/* 自定义滚动条（深色） */
+#printPanelCanvasArea::-webkit-scrollbar { width: 8px; height: 8px; }
+#printPanelCanvasArea::-webkit-scrollbar-track { background: var(--bg-dark); }
+#printPanelCanvasArea::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+#printPanelCanvasArea::-webkit-scrollbar-thumb:hover { background: #555; }
+
+#printPanelLayoutCanvas {
+    position: relative;
+    margin: 24px;
+    background: var(--paper-bg);
+    box-shadow: 0 4px 32px rgba(0,0,0,0.6);
+    transform-origin: 0 0;
+    flex-shrink: 0;
+}
+#printPanelLayoutCanvas canvas { display: block; }
+
+/* ── 布局元素通用 ──────────────────────────── */
+.layout-element {
+    position: absolute;
+    box-sizing: border-box;
+    cursor: move;
+    user-select: none;
+}
+
+.layout-element.selected {
+    outline: 2px solid var(--accent);
+    outline-offset: 0px;
+}
+
+.layout-element .resize-handle {
+    position: absolute;
+    width: var(--handle-size);
+    height: var(--handle-size);
+    background: white;
+    border: 1px solid var(--accent);
+    z-index: 10;
+    display: none;
+}
+
+.layout-element.selected .resize-handle { display: block; }
+
+.resize-handle.nw { top: -4px; left: -4px; cursor: nw-resize; }
+.resize-handle.n  { top: -4px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+.resize-handle.ne { top: -4px; right: -4px; cursor: ne-resize; }
+.resize-handle.e  { top: 50%; right: -4px; transform: translateY(-50%); cursor: e-resize; }
+.resize-handle.se { bottom: -4px; right: -4px; cursor: se-resize; }
+.resize-handle.s  { bottom: -4px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.resize-handle.sw { bottom: -4px; left: -4px; cursor: sw-resize; }
+.resize-handle.w  { top: 50%; left: -4px; transform: translateY(-50%); cursor: w-resize; }
+
+/* ── 数据框（地图） ─────────────────────────── */
+.data-frame-element {
+    border: 1px solid #333;
+    overflow: hidden;
+}
+.data-frame-element .leaflet-container,
+.data-frame-element .leaflet-map-pane,
+.data-frame-element .leaflet-tile-pane {
+    width: 100% !important;
+    height: 100% !important;
+}
+.data-frame-element .graticule-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+/* ── 比例尺 ────────────────────────────────── */
+.scale-bar-element {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.scale-bar-element canvas { display: block; }
+
+/* ── 数字比例尺 ────────────────────────────── */
+.scale-text-element {
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #333;
+}
+
+/* ── 指北针 ────────────────────────────────── */
+.north-arrow-element {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+}
+.north-arrow-element canvas { display: block; }
+
+/* ── 图例 ──────────────────────────────────── */
+.legend-element {
+    background: rgba(255,255,255,0.95);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 8px;
+    font-size: 11px;
+    color: #333;
+    overflow-y: auto;
+}
+.legend-element h4 { font-size: 12px; margin-bottom: 6px; }
+.legend-item { display: flex; align-items: center; gap: 6px; margin: 2px 0; }
+.legend-swatch { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── 标题 ──────────────────────────────────── */
+.title-element {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: text;
+    min-width: 60px;
+    min-height: 30px;
+    font-weight: bold;
+    color: #000;
+    user-select: text;
+}
+.title-element:focus { outline: none; }
+
+/* ── 副标题 ────────────────────────────────── */
+.sub-title-element {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: text;
+    min-width: 60px;
+    min-height: 20px;
+    font-weight: bold;
+    color: #000;
+    font-size: 11px;
+    user-select: text;
+}
+.sub-title-element:focus { outline: none; }
+
+/* ── 文字标注 ────────────────────────────────── */
+.label-element {
+    cursor: text;
+    user-select: text;
+    text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+}
+.label-element:focus { outline: none; }
+
+/* ── 责任栏（制图信息） ──────────────────────── */
+.credits-element {
+    font-size: 8px;
+    color: #333;
+    cursor: text;
+    user-select: text;
+    line-height: 1.4;
+    min-width: 60px;
+    min-height: 20px;
+}
+.credits-element:focus { outline: none; }
+
+/* ── 右侧属性面板 ──────────────────────────── */
+#printPanelRight {
+    width: 220px;
+    background: var(--panel-bg);
+    border-left: 1px solid var(--border);
+    flex-shrink: 0;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+#printPanelRight h3 {
+    font-size: 12px;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.prop-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 11px;
+}
+
+.prop-row label {
+    width: 50px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    text-align: right;
+}
+
+.prop-row input,
+.prop-row select,
+.prop-row textarea {
+    flex: 1;
+    background: #333;
+    border: 1px solid #444;
+    color: var(--text-primary);
+    padding: 4px 6px;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+.prop-row input:focus,
+.prop-row select:focus,
+.prop-row textarea:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.prop-empty {
+    color: #666;
+    text-align: center;
+    padding: 40px 10px;
+    font-size: 12px;
+}
+
+/* ── 导出遮罩 ──────────────────────────────── */
+#printPanelExportOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#printPanelExportOverlay .export-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #444;
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+#printPanelExportOverlay .export-text {
+    color: #fff;
+    font-size: 14px;
+}
+
+/* ── 通知 ──────────────────────────────────── */
+.notification {
+    position: fixed;
+    top: 56px;
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    z-index: 10000;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+
+.notification.success { background: rgba(52,199,89,0.9);  color: #fff; }
+.notification.error   { background: rgba(255,59,48,0.9);  color: #fff; }
+.notification.info    { background: rgba(0,122,255,0.9);  color: #fff; }
+
+/* ── 缩放指示器 ────────────────────────────── */
+#printPanelZoomIndicator {
+    position: fixed;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    border-radius: 10px;
+    padding: 4px 12px;
+    font-size: 12px;
+    z-index: 1000;
+    pointer-events: none;
+    user-select: none;
+}

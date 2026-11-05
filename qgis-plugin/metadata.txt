@@ -1,0 +1,31 @@
+[general]
+name=地质填图工具 (GeoMapping)
+description=地质填图系统 QGIS 插件 — 地质点采集、构造编绘、地层填充、QField配置导出
+about=该插件为 QGIS 增加专业地质填图功能，包含：野外数据导入、地质符号库、岩性花纹填充、产状标注、地层界线绘制、拓扑检查以及 QField 项目导出。
+version=1.0.0
+qgisMinimumVersion=3.22.0
+qgisMaximumVersion=3.99.0
+author=GIS开发实习
+email=geomapping@example.com
+homepage=https://github.com/example/geomapping
+repository=https://github.com/example/geomapping
+category=Plugins
+icon=icons/icon.png
+experimental=False
+deprecated=False
+
+# 标签
+tags=geology, geological, mapping, field, qfield, structure, stratum, fault, fold
+
+[about]
+这个插件让 QGIS 成为完整的地质填图桌面端工具。
+
+功能：
+  - 导入野外采集的地质点数据(GeoJSON/CSV)
+  - 地质符号库：产状、构造、矿点、采样点
+  - 岩性花纹填充：砂岩、页岩、灰岩、花岗岩等
+  - 地层界线绘制：整合/不整合/侵入/断层接触
+  - 断层绘制：正断层/逆断层/平移断层/推覆构造
+  - 拓扑检查：线断裂、面重叠、悬挂点
+  - QField 项目导出：一键生成野外移动端采集项目
+  - 与地质填图系统 Flask API 数据同步
